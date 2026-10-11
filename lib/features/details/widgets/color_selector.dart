@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme.dart';
 
 class ColorSelector extends StatelessWidget {
   final List<Color> colors;
@@ -14,28 +15,96 @@ class ColorSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 14,
+      runSpacing: 10,
       children: colors.map((color) {
         final isSelected = color == selectedColor;
-        return GestureDetector(
+        return _ColorSwatch(
+          color: color,
+          isSelected: isSelected,
           onTap: () => onColorSelected(color),
-          child: Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
-                width: 2,
-              ),
-            ),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: color,
-            ),
-          ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _ColorSwatch extends StatefulWidget {
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ColorSwatch({
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  State<_ColorSwatch> createState() => _ColorSwatchState();
+}
+
+class _ColorSwatchState extends State<_ColorSwatch> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isBright = widget.color.computeLuminance() > 0.6;
+    final checkColor = isBright ? const Color(0xFF1E2022) : Colors.white;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.92 : (widget.isSelected ? 1.08 : 1.0),
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          width: 42,
+          height: 42,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: widget.isSelected
+                  ? AppTheme.primary
+                  : Colors.transparent,
+              width: 2.2,
+            ),
+            boxShadow: [
+              if (widget.isSelected)
+                BoxShadow(
+                  color: widget.color.withValues(alpha: 0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+            ],
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.black.withValues(alpha: 0.12),
+                width: 1,
+              ),
+            ),
+            child: widget.isSelected
+                ? Center(
+                    child: Icon(
+                      Icons.check_rounded,
+                      size: 20,
+                      color: checkColor,
+                    ),
+                  )
+                : null,
+          ),
+        ),
+      ),
     );
   }
 }

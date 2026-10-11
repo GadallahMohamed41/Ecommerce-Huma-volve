@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+
 import '../../../core/dummy_data.dart';
+import '../../../core/services/firebase_auth_service.dart';
 import '../../../core/theme.dart';
-import '../widgets/profile_menu_item.dart';
 import '../../auth/login/screens/login_screen.dart';
+import '../widgets/profile_menu_item.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final firebaseUser = FirebaseAuthService().currentUser;
+    final userName = (firebaseUser?.displayName != null && firebaseUser!.displayName!.isNotEmpty)
+        ? firebaseUser.displayName!
+        : dummyUser.name;
+    final userEmail = firebaseUser?.email ?? dummyUser.email;
+    final userAvatar = firebaseUser?.photoURL ?? dummyUser.profilePictureUrl;
+
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
@@ -32,9 +41,19 @@ class ProfileScreen extends StatelessWidget {
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: CircleAvatar(
-                    radius: 56,
-                    backgroundImage: NetworkImage(dummyUser.profilePictureUrl),
+                  child: ClipOval(
+                    child: Image.network(
+                      userAvatar,
+                      width: 112,
+                      height: 112,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 112,
+                        height: 112,
+                        color: AppTheme.primary,
+                        child: const Icon(Icons.person, size: 56, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ),
                 Container(
@@ -49,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              dummyUser.name,
+              userName,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -57,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              dummyUser.email,
+              userEmail,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -98,15 +117,17 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.logout,
                     title: 'Logout',
                     isDestructive: true,
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
+                    onTap: () async {
+                      await FirebaseAuthService().signOut();
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
                           transitionsBuilder: (context, animation, secondaryAnimation, child) {
                             return FadeTransition(opacity: animation, child: child);
                           },
                         ),
+                        (route) => false,
                       );
                     },
                   ),

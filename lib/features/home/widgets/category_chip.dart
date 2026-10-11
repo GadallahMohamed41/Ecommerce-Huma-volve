@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme.dart';
 
-class CategoryChip extends StatelessWidget {
+class CategoryChip extends StatefulWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -14,37 +14,64 @@ class CategoryChip extends StatelessWidget {
   });
 
   @override
+  State<CategoryChip> createState() => _CategoryChipState();
+}
+
+class _CategoryChipState extends State<CategoryChip> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            if (!isSelected)
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.05),
-                spreadRadius: 2,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.94 : (widget.isSelected ? 1.02 : 1.0),
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+          decoration: BoxDecoration(
+            color: widget.isSelected ? AppTheme.primary : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: widget.isSelected
+                  ? AppTheme.primary
+                  : Colors.black.withValues(alpha: 0.06),
+              width: 1,
+            ),
+            boxShadow: [
+              if (!widget.isSelected)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  spreadRadius: 0,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              if (widget.isSelected)
+                BoxShadow(
+                  color: AppTheme.primary.withValues(alpha: 0.28),
+                  spreadRadius: 0,
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+            ],
+          ),
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: widget.isSelected ? Colors.white : AppTheme.textSecondary,
+                fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 14,
+                letterSpacing: 0.1,
               ),
-            if (isSelected)
-              BoxShadow(
-                color: AppTheme.primary.withValues(alpha: 0.3),
-                spreadRadius: 2,
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-          ],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppTheme.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              child: Text(widget.label),
+            ),
           ),
         ),
       ),
