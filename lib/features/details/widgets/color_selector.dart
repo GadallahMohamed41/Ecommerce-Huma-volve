@@ -16,8 +16,8 @@ class ColorSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 14,
-      runSpacing: 10,
+      spacing: 8,
+      runSpacing: 6,
       children: colors.map((color) {
         final isSelected = color == selectedColor;
         return _ColorSwatch(
@@ -64,23 +64,23 @@ class _ColorSwatchState extends State<_ColorSwatch> {
         curve: Curves.easeInOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
-          width: 42,
-          height: 42,
-          padding: const EdgeInsets.all(3),
+          width: 32,
+          height: 32,
+          padding: const EdgeInsets.all(2),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
               color: widget.isSelected
                   ? AppTheme.primary
                   : Colors.transparent,
-              width: 2.2,
+              width: 2,
             ),
             boxShadow: [
               if (widget.isSelected)
                 BoxShadow(
                   color: widget.color.withValues(alpha: 0.35),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
             ],
           ),
@@ -97,7 +97,7 @@ class _ColorSwatchState extends State<_ColorSwatch> {
                 ? Center(
                     child: Icon(
                       Icons.check_rounded,
-                      size: 20,
+                      size: 16,
                       color: checkColor,
                     ),
                   )

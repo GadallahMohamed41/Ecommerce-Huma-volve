@@ -34,10 +34,10 @@ class _CategoryChipState extends State<CategoryChip> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: widget.isSelected ? AppTheme.primary : Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: widget.isSelected
                   ? AppTheme.primary
@@ -67,7 +67,7 @@ class _CategoryChipState extends State<CategoryChip> {
               style: TextStyle(
                 color: widget.isSelected ? Colors.white : AppTheme.textSecondary,
                 fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 14,
+                fontSize: 13,
                 letterSpacing: 0.1,
               ),
               child: Text(widget.label),

@@ -16,8 +16,8 @@ class SizeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 12,
-      runSpacing: 10,
+      spacing: 8,
+      runSpacing: 6,
       children: sizes.map((size) {
         final isSelected = size == selectedSize;
         return _SizeChip(
@@ -50,41 +50,47 @@ class _SizeChipState extends State<_SizeChip> {
 
   @override
   Widget build(BuildContext context) {
+    final isLongText = widget.size.length > 3;
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
       onTapCancel: () => setState(() => _isPressed = false),
       onTap: widget.onTap,
       child: AnimatedScale(
-        scale: _isPressed ? 0.94 : (widget.isSelected ? 1.03 : 1.0),
+        scale: _isPressed ? 0.94 : (widget.isSelected ? 1.05 : 1.0),
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
-          constraints: const BoxConstraints(minWidth: 46, minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          width: isLongText ? null : 32,
+          height: 32,
+          padding: isLongText
+              ? const EdgeInsets.symmetric(horizontal: 10)
+              : EdgeInsets.zero,
           decoration: BoxDecoration(
             color: widget.isSelected ? AppTheme.primary : Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            shape: isLongText ? BoxShape.rectangle : BoxShape.circle,
+            borderRadius: isLongText ? BorderRadius.circular(16) : null,
             border: Border.all(
               color: widget.isSelected
                   ? AppTheme.primary
-                  : Colors.black.withValues(alpha: 0.08),
+                  : Colors.black.withValues(alpha: 0.12),
               width: 1.2,
             ),
             boxShadow: [
               if (widget.isSelected)
                 BoxShadow(
                   color: AppTheme.primary.withValues(alpha: 0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 )
               else
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
                 ),
             ],
           ),
@@ -93,9 +99,9 @@ class _SizeChipState extends State<_SizeChip> {
               duration: const Duration(milliseconds: 180),
               style: TextStyle(
                 color: widget.isSelected ? Colors.white : AppTheme.textPrimary,
-                fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 14,
-                letterSpacing: 0.2,
+                fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
+                fontSize: isLongText ? 11 : 12,
+                letterSpacing: 0.1,
               ),
               child: Text(
                 widget.size,
