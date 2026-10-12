@@ -117,22 +117,23 @@ class CartItem {
     required this.selectedColor,
     required this.selectedSize,
   });
+
+  CartItem copyWith({
+    Product? product,
+    int? quantity,
+    Color? selectedColor,
+    String? selectedSize,
+  }) {
+    return CartItem(
+      product: product ?? this.product,
+      quantity: quantity ?? this.quantity,
+      selectedColor: selectedColor ?? this.selectedColor,
+      selectedSize: selectedSize ?? this.selectedSize,
+    );
+  }
 }
 
-final dummyCart = [
-  CartItem(
-    product: dummyProducts[0],
-    quantity: 1,
-    selectedColor: Colors.white,
-    selectedSize: '42',
-  ),
-  CartItem(
-    product: dummyProducts[2],
-    quantity: 2,
-    selectedColor: Colors.black,
-    selectedSize: 'One Size',
-  ),
-];
+final List<CartItem> dummyCart = [];
 
 class UserProfile {
   final String name;

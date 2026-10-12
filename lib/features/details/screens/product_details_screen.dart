@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/dummy_data.dart';
 import '../../../core/theme.dart';
+import '../../cart/cubit/cart_cubit.dart';
 import '../widgets/color_selector.dart';
 import '../widgets/size_selector.dart';
 
@@ -31,13 +32,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   void _handleAddToCart() {
     setState(() => _isAddingToCart = true);
 
-    dummyCart.add(
-      CartItem(
-        product: widget.product,
-        quantity: _quantity,
-        selectedColor: _selectedColor,
-        selectedSize: _selectedSize,
-      ),
+    CartCubit.instance.addToCart(
+      product: widget.product,
+      quantity: _quantity,
+      selectedColor: _selectedColor,
+      selectedSize: _selectedSize,
     );
 
     ScaffoldMessenger.of(context).clearSnackBars();
