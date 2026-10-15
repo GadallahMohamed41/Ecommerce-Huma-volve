@@ -29,17 +29,62 @@ class HomeCubit extends Cubit<HomeState> {
   int _selectedCategoryIndex = 0;
   String _searchQuery = '';
 
+  int _offset = 0;
+  static const int _limit = 10;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
   int get selectedCategoryIndex => _selectedCategoryIndex;
   List<String> get categories => _categories;
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
 
-  Future<void> getProducts() async {
-    emit(HomeLoadingState());
+  Future<void> getProducts({bool isRefresh = false}) async {
+    if (isRefresh || _allProducts.isEmpty) {
+      _offset = 0;
+      _hasMore = true;
+      if (isRefresh) {
+        _allProducts.clear();
+      }
+      emit(HomeLoadingState());
+    }
+
     try {
-      final products = await _getProductsUseCase();
-      _allProducts = products;
+      final products = await _getProductsUseCase(offset: _offset, limit: _limit);
+      if (products.length < _limit) {
+        _hasMore = false;
+      }
+      _allProducts = List.from(products);
+      _offset = _allProducts.length;
       _applyFilter();
     } catch (e) {
       emit(HomeErrorState(e.toString()));
+    }
+  }
+
+  Future<void> loadMoreProducts() async {
+    if (!_hasMore || _isLoadingMore || state is! HomeSuccessState) return;
+
+    _isLoadingMore = true;
+    _applyFilter(isLoadingMore: true);
+
+    try {
+      final newProducts = await _getProductsUseCase(offset: _offset, limit: _limit);
+      if (newProducts.length < _limit) {
+        _hasMore = false;
+      }
+
+      if (newProducts.isNotEmpty) {
+        final existingIds = _allProducts.map((p) => p.id).toSet();
+        final unique = newProducts.where((p) => !existingIds.contains(p.id)).toList();
+        _allProducts.addAll(unique);
+        _offset += newProducts.length;
+      }
+    } catch (e) {
+      debugPrint('Error loading more products: $e');
+    } finally {
+      _isLoadingMore = false;
+      _applyFilter();
     }
   }
 
@@ -53,7 +98,7 @@ class HomeCubit extends Cubit<HomeState> {
     _applyFilter();
   }
 
-  void _applyFilter() {
+  void _applyFilter({bool? isLoadingMore}) {
     final query = _searchQuery.trim().toLowerCase();
     final selectedCategory = _categories[_selectedCategoryIndex].toLowerCase();
 
@@ -103,6 +148,8 @@ class HomeCubit extends Cubit<HomeState> {
         categories: _categories,
         selectedCategoryIndex: _selectedCategoryIndex,
         searchQuery: _searchQuery,
+        hasMore: _hasMore,
+        isLoadingMore: isLoadingMore ?? _isLoadingMore,
       ),
     );
   }

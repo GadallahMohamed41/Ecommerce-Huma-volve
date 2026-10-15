@@ -25,8 +25,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedColor = widget.product.colors.first;
-    _selectedSize = widget.product.sizes.first;
+    _selectedColor = widget.product.colors.isNotEmpty
+        ? widget.product.colors.first
+        : Colors.black;
+    _selectedSize = widget.product.sizes.isNotEmpty
+        ? widget.product.sizes.first
+        : 'One Size';
   }
 
   void _handleAddToCart() {

@@ -34,11 +34,11 @@ class ProductApiService {
     return 'Accessories';
   }
 
-  Future<List<Product>> fetchProducts() async {
+  Future<List<Product>> fetchProducts({int offset = 0, int limit = 10}) async {
     try {
       final response = await _apiClient.dio.get(
         '/products',
-        queryParameters: {'offset': 0, 'limit': 20},
+        queryParameters: {'offset': offset, 'limit': limit},
       );
 
       if (response.statusCode == 200 && response.data is List) {

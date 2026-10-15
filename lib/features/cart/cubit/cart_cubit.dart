@@ -4,11 +4,21 @@ import '../../../core/dummy_data.dart';
 import 'cart_state.dart';
 
 class CartCubit extends Cubit<CartState> {
-  static final CartCubit instance = CartCubit._internal();
+  static CartCubit _instance = CartCubit.create();
+  static CartCubit get instance => _instance;
 
-  factory CartCubit() => instance;
+  factory CartCubit() => _instance;
 
-  CartCubit._internal() : super(CartInitialState(List<CartItem>.from(dummyCart)));
+  final List<CartItem> _items;
+
+  CartCubit.create([List<CartItem>? initialItems])
+      : _items = List<CartItem>.from(initialItems ?? dummyCart),
+        super(CartInitialState(List<CartItem>.from(initialItems ?? dummyCart)));
+
+  @visibleForTesting
+  static void resetForTesting() {
+    _instance = CartCubit.create([]);
+  }
 
   List<CartItem> get items => state.items;
 
@@ -25,7 +35,7 @@ class CartCubit extends Cubit<CartState> {
     final size = selectedSize ??
         (product.sizes.isNotEmpty ? product.sizes.first : 'One Size');
 
-    final existingIndex = dummyCart.indexWhere(
+    final existingIndex = _items.indexWhere(
       (item) =>
           item.product.id == product.id &&
           item.selectedSize == size &&
@@ -33,12 +43,12 @@ class CartCubit extends Cubit<CartState> {
     );
 
     if (existingIndex != -1) {
-      final current = dummyCart[existingIndex];
-      dummyCart[existingIndex] = current.copyWith(
+      final current = _items[existingIndex];
+      _items[existingIndex] = current.copyWith(
         quantity: current.quantity + quantity,
       );
     } else {
-      dummyCart.add(
+      _items.add(
         CartItem(
           product: product,
           quantity: quantity,
@@ -48,21 +58,21 @@ class CartCubit extends Cubit<CartState> {
       );
     }
 
-    emit(CartUpdatedState(List<CartItem>.from(dummyCart)));
+    _syncAndEmit();
   }
 
   void removeFromCart(CartItem cartItem) {
-    dummyCart.removeWhere(
+    _items.removeWhere(
       (item) =>
           item.product.id == cartItem.product.id &&
           item.selectedSize == cartItem.selectedSize &&
           item.selectedColor.toARGB32() == cartItem.selectedColor.toARGB32(),
     );
-    emit(CartUpdatedState(List<CartItem>.from(dummyCart)));
+    _syncAndEmit();
   }
 
   void incrementQuantity(CartItem cartItem) {
-    final index = dummyCart.indexWhere(
+    final index = _items.indexWhere(
       (item) =>
           item.product.id == cartItem.product.id &&
           item.selectedSize == cartItem.selectedSize &&
@@ -70,14 +80,14 @@ class CartCubit extends Cubit<CartState> {
     );
 
     if (index != -1) {
-      final current = dummyCart[index];
-      dummyCart[index] = current.copyWith(quantity: current.quantity + 1);
-      emit(CartUpdatedState(List<CartItem>.from(dummyCart)));
+      final current = _items[index];
+      _items[index] = current.copyWith(quantity: current.quantity + 1);
+      _syncAndEmit();
     }
   }
 
   void decrementQuantity(CartItem cartItem) {
-    final index = dummyCart.indexWhere(
+    final index = _items.indexWhere(
       (item) =>
           item.product.id == cartItem.product.id &&
           item.selectedSize == cartItem.selectedSize &&
@@ -85,18 +95,26 @@ class CartCubit extends Cubit<CartState> {
     );
 
     if (index != -1) {
-      final current = dummyCart[index];
+      final current = _items[index];
       if (current.quantity > 1) {
-        dummyCart[index] = current.copyWith(quantity: current.quantity - 1);
+        _items[index] = current.copyWith(quantity: current.quantity - 1);
       } else {
-        dummyCart.removeAt(index);
+        _items.removeAt(index);
       }
-      emit(CartUpdatedState(List<CartItem>.from(dummyCart)));
+      _syncAndEmit();
     }
   }
 
   void clearCart() {
-    dummyCart.clear();
-    emit(CartUpdatedState(const []));
+    _items.clear();
+    _syncAndEmit();
+  }
+
+  void _syncAndEmit() {
+    if (identical(this, _instance)) {
+      dummyCart.clear();
+      dummyCart.addAll(_items);
+    }
+    emit(CartUpdatedState(List<CartItem>.unmodifiable(_items)));
   }
 }

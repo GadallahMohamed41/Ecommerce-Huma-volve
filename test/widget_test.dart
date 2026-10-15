@@ -1,30 +1,78 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:ecommerce_app_huma_volve/main.dart';
+import 'package:ecommerce_app_huma_volve/core/widgets/primary_button.dart';
+import 'package:ecommerce_app_huma_volve/core/widgets/custom_text_field.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('Core Widgets Smoke Tests', () {
+    testWidgets('PrimaryButton renders label and triggers onPressed', (WidgetTester tester) async {
+      bool pressed = false;
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PrimaryButton(
+              text: 'Checkout',
+              onPressed: () {
+                pressed = true;
+              },
+            ),
+          ),
+        ),
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(find.text('Checkout'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      await tester.tap(find.byType(PrimaryButton));
+      expect(pressed, isTrue);
+    });
+
+    testWidgets('PrimaryButton shows loading indicator and disables tap when isLoading is true',
+        (WidgetTester tester) async {
+      bool pressed = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: PrimaryButton(
+              text: 'Submit',
+              isLoading: true,
+              onPressed: () {
+                pressed = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Submit'), findsNothing);
+
+      await tester.tap(find.byType(PrimaryButton));
+      expect(pressed, isFalse);
+    });
+
+    testWidgets('CustomTextField renders hint and prefix icon', (WidgetTester tester) async {
+      final controller = TextEditingController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomTextField(
+              hintText: 'Enter Email',
+              prefixIcon: Icons.email_outlined,
+              controller: controller,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Enter Email'), findsOneWidget);
+      expect(find.byIcon(Icons.email_outlined), findsOneWidget);
+
+      await tester.enterText(find.byType(TextFormField), 'test@example.com');
+      expect(controller.text, 'test@example.com');
+    });
   });
 }

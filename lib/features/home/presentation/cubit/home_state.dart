@@ -12,6 +12,8 @@ class HomeSuccessState extends HomeState {
   final List<String> categories;
   final int selectedCategoryIndex;
   final String searchQuery;
+  final bool hasMore;
+  final bool isLoadingMore;
 
   HomeSuccessState({
     required this.products,
@@ -19,6 +21,8 @@ class HomeSuccessState extends HomeState {
     required this.categories,
     required this.selectedCategoryIndex,
     required this.searchQuery,
+    this.hasMore = true,
+    this.isLoadingMore = false,
   });
 
   HomeSuccessState copyWith({
@@ -27,6 +31,8 @@ class HomeSuccessState extends HomeState {
     List<String>? categories,
     int? selectedCategoryIndex,
     String? searchQuery,
+    bool? hasMore,
+    bool? isLoadingMore,
   }) {
     return HomeSuccessState(
       products: products ?? this.products,
@@ -34,6 +40,8 @@ class HomeSuccessState extends HomeState {
       categories: categories ?? this.categories,
       selectedCategoryIndex: selectedCategoryIndex ?? this.selectedCategoryIndex,
       searchQuery: searchQuery ?? this.searchQuery,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 }

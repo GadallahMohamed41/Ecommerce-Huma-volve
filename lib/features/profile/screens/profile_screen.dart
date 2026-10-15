@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/dummy_data.dart';
 import '../../../core/services/firebase_auth_service.dart';
 import '../../../core/theme.dart';
 import '../../auth/login/screens/login_screen.dart';
@@ -9,14 +8,35 @@ import '../widgets/profile_menu_item.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  String _resolveDisplayName(String? displayName, String? email) {
+    if (displayName != null && displayName.trim().isNotEmpty) {
+      return displayName.trim();
+    }
+
+    if (email != null && email.contains('@')) {
+      final prefix = email.split('@').first;
+      final parts = prefix.split(RegExp(r'[._\-]'));
+      final formatted = parts
+          .where((part) => part.isNotEmpty)
+          .map((part) => part[0].toUpperCase() + part.substring(1).toLowerCase())
+          .join(' ');
+      if (formatted.isNotEmpty) {
+        return formatted;
+      }
+    }
+
+    return 'User';
+  }
+
   @override
   Widget build(BuildContext context) {
     final firebaseUser = FirebaseAuthService().currentUser;
-    final userName = (firebaseUser?.displayName != null && firebaseUser!.displayName!.isNotEmpty)
-        ? firebaseUser.displayName!
-        : dummyUser.name;
-    final userEmail = firebaseUser?.email ?? dummyUser.email;
-    final userAvatar = firebaseUser?.photoURL ?? dummyUser.profilePictureUrl;
+    final userName = _resolveDisplayName(
+      firebaseUser?.displayName,
+      firebaseUser?.email,
+    );
+    final userEmail = firebaseUser?.email ?? '';
+    final userAvatar = firebaseUser?.photoURL;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -42,18 +62,25 @@ class ProfileScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: ClipOval(
-                    child: Image.network(
-                      userAvatar,
-                      width: 112,
-                      height: 112,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 112,
-                        height: 112,
-                        color: AppTheme.primary,
-                        child: const Icon(Icons.person, size: 56, color: Colors.white),
-                      ),
-                    ),
+                    child: userAvatar != null && userAvatar.isNotEmpty
+                        ? Image.network(
+                            userAvatar,
+                            width: 112,
+                            height: 112,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              width: 112,
+                              height: 112,
+                              color: AppTheme.primary,
+                              child: const Icon(Icons.person, size: 56, color: Colors.white),
+                            ),
+                          )
+                        : Container(
+                            width: 112,
+                            height: 112,
+                            color: AppTheme.primary,
+                            child: const Icon(Icons.person, size: 56, color: Colors.white),
+                          ),
                   ),
                 ),
                 Container(

@@ -9,8 +9,8 @@ class HomeRepositoryImpl implements HomeRepository {
       : remoteDataSource = remoteDataSource ?? HomeRemoteDataSourceImpl();
 
   @override
-  Future<List<ProductEntity>> getProducts() {
-    return remoteDataSource.getProducts();
+  Future<List<ProductEntity>> getProducts({int offset = 0, int limit = 10}) {
+    return remoteDataSource.getProducts(offset: offset, limit: limit);
   }
 
   @override

@@ -3,7 +3,7 @@ import '../../../../core/services/product_api_service.dart';
 import '../models/product_model.dart';
 
 abstract class HomeRemoteDataSource {
-  Future<List<Product>> getProducts();
+  Future<List<Product>> getProducts({int offset = 0, int limit = 10});
   List<String> getCategories();
 }
 
@@ -14,8 +14,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       : _productApiService = productApiService ?? ProductApiService();
 
   @override
-  Future<List<Product>> getProducts() async {
-    final products = await _productApiService.fetchProducts();
+  Future<List<Product>> getProducts({int offset = 0, int limit = 10}) async {
+    final products = await _productApiService.fetchProducts(offset: offset, limit: limit);
     return products
         .map(
           (p) => ProductModel(

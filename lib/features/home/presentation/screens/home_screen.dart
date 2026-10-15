@@ -30,9 +30,27 @@ class _HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<_HomeView> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (currentScroll >= maxScroll - 200) {
+      context.read<HomeCubit>().loadMoreProducts();
+    }
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -62,8 +80,9 @@ class _HomeViewState extends State<_HomeView> {
       body: SafeArea(
         child: RefreshIndicator(
           color: AppTheme.primary,
-          onRefresh: () => context.read<HomeCubit>().getProducts(),
+          onRefresh: () => context.read<HomeCubit>().getProducts(isRefresh: true),
           child: CustomScrollView(
+            controller: _scrollController,
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
             ),
@@ -435,7 +454,34 @@ class _HomeViewState extends State<_HomeView> {
                 },
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              BlocBuilder<HomeCubit, HomeState>(
+                buildWhen: (prev, curr) {
+                  if (prev is HomeSuccessState && curr is HomeSuccessState) {
+                    return prev.isLoadingMore != curr.isLoadingMore;
+                  }
+                  return true;
+                },
+                builder: (context, state) {
+                  if (state is HomeSuccessState && state.isLoadingMore) {
+                    return const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(
+                          child: SizedBox(
+                            width: 26,
+                            height: 26,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return const SliverToBoxAdapter(child: SizedBox(height: 32));
+                },
+              ),
             ],
           ),
         ),

@@ -34,10 +34,12 @@ class PrimaryButton extends StatelessWidget {
         ),
       ),
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
+          disabledForegroundColor: Colors.white.withValues(alpha: 0.7),
+          disabledBackgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
@@ -46,7 +48,14 @@ class PrimaryButton extends StatelessWidget {
           minimumSize: const Size(double.infinity, 56),
         ),
         child: isLoading
-            ? CircularProgressIndicator(color: Colors.white)
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
             : Text(
                 text,
                 style: const TextStyle(
